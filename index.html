@@ -1,0 +1,1299 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<meta name="theme-color" content="#4f46e5">
+<title>Test-App</title>
+<style>
+/* ==================================================================
+   DESIGN-TOKENS (hell) – Dark Mode automatisch über Systemeinstellung
+   ================================================================== */
+:root {
+  --bg: #f1f5f9;
+  --card: #ffffff;
+  --text: #0f172a;
+  --muted: #64748b;
+  --border: #e2e8f0;
+  --border-strong: #cbd5e1;
+  --header: rgba(255, 255, 255, 0.94);
+  --primary: #4f46e5;
+  --primary-hover: #4338ca;
+  --primary-soft: #eef2ff;
+  --primary-soft-border: #c7d2fe;
+  --muted-soft: #f1f5f9;
+  --focus: #4f46e5;
+  --ok: #059669;
+  --ok-soft: #ecfdf5;
+  --bad: #e11d48;
+  --bad-soft: #fff1f2;
+  --shadow: 0 10px 30px rgba(15, 23, 42, 0.08);
+  --disabled-bg: #e2e8f0;
+  --disabled-fg: #94a3b8;
+  --radius: 18px;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #0f172a;
+    --card: #1e293b;
+    --text: #e2e8f0;
+    --muted: #94a3b8;
+    --border: #334155;
+    --border-strong: #475569;
+    --header: rgba(15, 23, 42, 0.92);
+    --primary: #818cf8;
+    --primary-hover: #a5b4fc;
+    --primary-soft: rgba(129, 140, 248, 0.16);
+    --primary-soft-border: rgba(129, 140, 248, 0.45);
+    --muted-soft: rgba(148, 163, 184, 0.12);
+    --focus: #a5b4fc;
+    --ok: #34d399;
+    --ok-soft: rgba(52, 211, 153, 0.15);
+    --bad: #fb7185;
+    --bad-soft: rgba(251, 113, 133, 0.15);
+    --shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+    --disabled-bg: #334155;
+    --disabled-fg: #64748b;
+  }
+}
+
+/* ==================================================================
+   BASIS
+   ================================================================== */
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0;
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  line-height: 1.5;
+}
+.wrap {
+  max-width: 680px;
+  margin: 0 auto;
+  padding: 24px 20px 56px;
+}
+h1 { font-size: 1.35rem; margin: 0 0 8px; line-height: 1.3; }
+
+.card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 22px;
+  padding: 26px 24px;
+  box-shadow: var(--shadow);
+  margin-top: 20px;
+}
+
+/* ==================================================================
+   STARTSCREEN
+   ================================================================== */
+.hero-icon {
+  width: 56px; height: 56px;
+  border-radius: 16px;
+  background: var(--primary-soft);
+  display: flex; align-items: center; justify-content: center;
+  margin-bottom: 16px;
+}
+.hero-icon svg { width: 28px; height: 28px; color: var(--primary); }
+.desc { color: var(--muted); margin: 0 0 16px; }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; }
+.chip {
+  display: inline-block;
+  background: var(--muted-soft);
+  border: 1px solid var(--border);
+  color: var(--muted);
+  border-radius: 999px;
+  padding: 5px 12px;
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+.restored-note {
+  background: var(--primary-soft);
+  border: 1px solid var(--primary-soft-border);
+  color: var(--text);
+  border-radius: 12px;
+  padding: 12px 14px;
+  font-size: 0.9rem;
+  margin: 0 0 16px;
+}
+.btn-col { display: grid; gap: 12px; }
+.footer-note {
+  text-align: center;
+  color: var(--muted);
+  font-size: 0.8rem;
+  margin-top: 18px;
+}
+
+/* ==================================================================
+   KOPFZEILE + FORTSCHRITT
+   ================================================================== */
+.app-header {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: var(--header);
+  border-bottom: 1px solid var(--border);
+  padding-top: env(safe-area-inset-top);
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+}
+.header-inner { padding: 12px 20px 14px; }
+.progress-line {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 10px; margin-bottom: 8px;
+}
+.progress-text { color: var(--muted); font-size: 0.85rem; font-weight: 600; }
+.progress-track {
+  height: 10px;
+  border-radius: 999px;
+  background: var(--border);
+  overflow: hidden;
+}
+.progress-fill {
+  height: 100%;
+  width: 0;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #4f46e5, #8b5cf6);
+  transition: width 0.3s ease;
+}
+
+/* ==================================================================
+   BADGES
+   ================================================================== */
+.badge {
+  display: inline-block;
+  border-radius: 999px;
+  padding: 4px 12px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+.type-badge { background: var(--primary-soft); color: var(--primary); }
+.badge-mut { background: var(--muted-soft); color: var(--muted); text-transform: none; }
+.badge-ok { background: var(--ok-soft); color: var(--ok); }
+.badge-bad { background: var(--bad-soft); color: var(--bad); }
+
+/* ==================================================================
+   BUTTONS
+   ================================================================== */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center;
+  min-height: 52px;
+  padding: 0 22px;
+  border: 2px solid transparent;
+  border-radius: 14px;
+  font-size: 1rem; font-weight: 600; font-family: inherit;
+  cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  transition: background 0.15s, border-color 0.15s, transform 0.1s, box-shadow 0.15s;
+}
+.btn:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
+.btn-primary { background: var(--primary); color: #fff; box-shadow: 0 8px 20px rgba(79, 70, 229, 0.22); }
+.btn-primary:hover { background: var(--primary-hover); }
+.btn-primary:active { transform: scale(0.99); }
+.btn-primary:disabled {
+  background: var(--disabled-bg); color: var(--disabled-fg);
+  box-shadow: none; cursor: not-allowed;
+}
+.btn-secondary { background: var(--card); border-color: var(--border); color: var(--text); }
+.btn-secondary:hover { background: var(--muted-soft); }
+.nav { display: grid; grid-template-columns: auto 1fr; gap: 12px; margin-top: 20px; }
+
+/* ==================================================================
+   SINGLE- / MULTIPLE-CHOICE
+   ================================================================== */
+.choices { display: grid; gap: 12px; }
+@media (min-width: 600px) { .choices.cols { grid-template-columns: 1fr 1fr; } }
+.choice {
+  display: flex; gap: 14px; align-items: flex-start;
+  width: 100%; text-align: left;
+  min-height: 56px; padding: 15px 16px;
+  background: var(--card);
+  border: 2px solid var(--border);
+  border-radius: 16px;
+  font: inherit; color: inherit;
+  cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  transition: border-color 0.15s, background 0.15s, box-shadow 0.15s, transform 0.1s;
+}
+.choice:hover { border-color: var(--primary-soft-border); }
+.choice:active { transform: scale(0.99); }
+.choice:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
+.choice.on { border-color: var(--primary); background: var(--primary-soft); box-shadow: 0 0 0 4px var(--primary-soft); }
+.choice-mark {
+  flex: 0 0 auto;
+  width: 24px; height: 24px; margin-top: 2px;
+  border: 2px solid var(--border-strong);
+  border-radius: 50%;
+  background: var(--card);
+  display: inline-flex; align-items: center; justify-content: center;
+  color: #fff;
+  transition: background 0.15s, border-color 0.15s;
+}
+.choice.multi .choice-mark { border-radius: 7px; }
+.choice.on .choice-mark { background: var(--primary); border-color: var(--primary); }
+.choice-mark svg { width: 13px; height: 13px; opacity: 0; transition: opacity 0.15s; }
+.choice.on .choice-mark svg { opacity: 1; }
+.choice-text { font-size: 0.98rem; line-height: 1.4; }
+
+/* ==================================================================
+   FREITEXT
+   ================================================================== */
+.text-input {
+  width: 100%;
+  min-height: 140px;
+  padding: 14px;
+  border: 2px solid var(--border);
+  border-radius: 14px;
+  font: inherit;
+  font-size: 16px; /* verhindert Auto-Zoom beim Fokus auf iOS */
+  background: var(--card);
+  color: inherit;
+  resize: vertical;
+}
+.text-input:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 4px var(--primary-soft); }
+.char-count { text-align: right; color: var(--muted); font-size: 0.8rem; margin-top: 6px; }
+.char-count.limit { color: var(--bad); font-weight: 700; }
+
+/* ==================================================================
+   SKALA
+   ================================================================== */
+.scale-row { display: grid; gap: 10px; }
+.scale-btn {
+  min-height: 56px;
+  border-radius: 14px;
+  border: 2px solid var(--border);
+  background: var(--card);
+  color: var(--text);
+  font: inherit; font-weight: 700; font-size: 1.05rem;
+  cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+  transition: background 0.15s, border-color 0.15s, transform 0.1s;
+}
+.scale-btn:hover { border-color: var(--primary-soft-border); }
+.scale-btn:active { transform: scale(0.96); }
+.scale-btn:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
+.scale-btn.on {
+  background: var(--primary); border-color: var(--primary); color: #fff;
+  box-shadow: 0 8px 18px rgba(79, 70, 229, 0.25);
+}
+.scale-labels {
+  display: flex; justify-content: space-between;
+  color: var(--muted); font-size: 0.82rem; margin-top: 8px;
+}
+
+/* ==================================================================
+   SORTIERUNG
+   ================================================================== */
+.sort-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 12px; }
+.sort-item {
+  display: flex; align-items: center; gap: 12px;
+  background: var(--card);
+  border: 2px solid var(--border);
+  border-radius: 16px;
+  padding: 12px 14px;
+  touch-action: manipulation;
+}
+.sort-item.dragging {
+  position: relative;
+  z-index: 5;
+  border-color: var(--primary);
+  box-shadow: 0 14px 30px rgba(15, 23, 42, 0.25);
+}
+.sort-num {
+  flex: 0 0 auto;
+  width: 30px; height: 30px;
+  border-radius: 10px;
+  background: var(--primary-soft); color: var(--primary);
+  font-weight: 700; font-size: 0.88rem;
+  display: flex; align-items: center; justify-content: center;
+}
+.sort-label {
+  flex: 1;
+  font-size: 0.96rem;
+  user-select: none; -webkit-user-select: none;
+}
+.sort-grip {
+  flex: 0 0 auto;
+  width: 42px; height: 44px;
+  border: none; background: transparent;
+  border-radius: 10px;
+  cursor: grab;
+  touch-action: none; /* wichtig: verhindert Scrollen beim Ziehen auf Touch */
+  display: flex; align-items: center; justify-content: center;
+  color: var(--muted);
+}
+.sort-grip:hover { background: var(--muted-soft); }
+.sort-grip svg { width: 18px; height: 18px; }
+.sort-btn {
+  flex: 0 0 auto;
+  width: 42px; height: 44px;
+  border: 1px solid var(--border);
+  background: var(--card);
+  border-radius: 10px;
+  color: var(--muted);
+  font: inherit;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+.sort-btn:hover { background: var(--muted-soft); color: var(--text); }
+.sort-btn:disabled { opacity: 0.25; cursor: not-allowed; }
+.sort-btn svg { width: 16px; height: 16px; }
+.sort-btn svg.down { transform: rotate(180deg); }
+.sort-tip { color: var(--muted); font-size: 0.8rem; margin: 10px 0 0; }
+
+/* ==================================================================
+   FRAGE-SCREEN
+   ================================================================== */
+.q-title { margin-bottom: 6px; }
+.hint { color: var(--muted); font-size: 0.92rem; margin: 0 0 6px; }
+.req-line { margin: 0 0 18px; }
+.q-box { margin-top: 14px; }
+.msg { color: var(--bad); min-height: 1.3em; margin: 12px 0 0; font-size: 0.9rem; font-weight: 600; }
+
+/* ==================================================================
+   ERGEBNIS
+   ================================================================== */
+.result-head { text-align: center; }
+.result-icon {
+  width: 64px; height: 64px;
+  border-radius: 50%;
+  margin: 0 auto 14px;
+  display: flex; align-items: center; justify-content: center;
+}
+.result-icon.ok { background: var(--ok-soft); }
+.result-icon.bad { background: var(--bad-soft); }
+.result-icon svg { width: 30px; height: 30px; }
+.result-icon.ok svg { color: var(--ok); }
+.result-icon.bad svg { color: var(--bad); }
+.score-big { font-size: 2.8rem; font-weight: 800; line-height: 1.1; margin: 4px 0; }
+.result-meta { color: var(--muted); margin: 4px 0 18px; }
+.review-title { font-size: 1.05rem; font-weight: 700; margin: 22px 0 4px; }
+.review-item {
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 14px 16px;
+  margin-top: 12px;
+  text-align: left;
+}
+.review-q { font-weight: 600; font-size: 0.95rem; }
+.review-line { margin-top: 8px; font-size: 0.9rem; }
+.review-line .lab { color: var(--muted); font-weight: 600; }
+.review-line.sol { color: var(--ok); }
+.review-expl { color: var(--muted); font-size: 0.86rem; margin-top: 8px; }
+
+@media (prefers-reduced-motion: reduce) {
+  * { transition: none !important; animation: none !important; }
+}
+</style>
+</head>
+<body>
+<div id="app"></div>
+
+<script>
+"use strict";
+
+/* ====================================================================
+   TEST-APP – client-side only, eine Datei, kein Build-Step, keine
+   externen Abhängigkeiten.
+
+   Ziel-Baseline: Chrome/Edge 79+, Firefox 68+, Safari 13+ / iOS 13+,
+   Samsung Internet 11+. Bewusst verzichtet auf sehr neue Syntax
+   (?. , ??, logische Zuweisungen) und sehr neue CSS-Features
+   (:has(), Flexbox-gap), damit auch etwas ältere Browser laufen.
+
+   Aufbau:
+     1) TEST   – Inhalt & Konfiguration (hier deine Fragen pflegen)
+     2) STR    – UI-Texte zentral (Austausch für Internationalisierung)
+     3) TYPES  – Fragetypen-Registry (hier neue Fragetypen ergänzen)
+     4) State, Speicherung (localStorage), Rendering, Navigation
+     5) Drag & Drop für Sortierfragen über Pointer Events
+==================================================================== */
+
+/* ====================================================================
+   1) TEST-INHALT
+   --------------------------------------------------------------------
+   Jede Frage:
+     id        eindeutiger Schlüssel (auch für localStorage)
+     type      Fragetyp, muss in TYPES registriert sein
+     title     Fragetext
+     hint      optionaler Hinweistext
+     required  false = Frage darf übersprungen werden (Standard: true)
+     points    Punkte für richtige Antwort (Standard: 1)
+     seconds   geschätzte Bearbeitungszeit (für die Startscreen-Anzeige)
+     correct   erwartete Antwort (bei Bedarf, siehe Fragetyp)
+     explanation  Erläuterung für die Auswertung (optional)
+   Neuen Fragetyp hinzufügen: siehe Kommentar bei TYPES.
+==================================================================== */
+const TEST = {
+  id: "demo-test-v1",
+  title: "Pferde-KnowHow-Test",
+  description:
+    "Kurzer KnowHow-Test zu Ilkas und Jens's Pferden. Nur Basics " +
+    "Have Fun",
+  passPercent: 60,
+  showSolutions: true,
+  questions: [
+    {
+      id: "age",
+      type: "single",
+      title: "Welches Pferd ist das älteste unter allen 14 Pferden?",
+      hint: "Nur eine Antwort ist richtig.",
+      columns: 2,
+      points: 2,
+      seconds: 45,
+      options: [
+        { key: "a", text: "Tokio" },
+        { key: "b", text: "Pascolo Go" },
+        { key: "c", text: "FedEx" },
+        { key: "d", text: "Radieschen" }
+      ],
+      correct: "b",
+      explanation:
+        "Pascolo Go ist schon in die Jahre gekommen.  " +
+        "Sieht aber immer noch gut aus :-), wobei er selbst kaum noch sieht :-("
+    },
+    {
+      id: "foodspeed",
+      type: "single",
+      title: "Welches Pferd ist der langsamste Fresser?",
+      points: 2,
+      seconds: 45,
+      options: [
+        { key: "a", text: "Pamina" },
+        { key: "b", text: "Cosmo" },
+        { key: "c", text: "Prisca" },
+        { key: "d", text: "Bounty" }
+      ],
+      correct: "d",
+      explanation:
+        "Bounty braucht am meisten Zeit. " +
+        "Er frisst aus hochgehangenen Eimer in seiner Box."
+    },
+    {
+      id: "ancestor",
+      type: "single",
+      title: "Welches Pferd ist die Mutter von Lovely?",
+      points: 2,
+      seconds: 45,
+      options: [
+        { key: "a", text: "Tessie" },
+        { key: "b", text: "FedEx" },
+        { key: "c", text: "Prisca" },
+        { key: "d", text: "Bounty" }
+      ],
+      correct: "a",
+      explanation:
+        "Tessie (Vollblut) ist Mutter von Lovely " +
+        "Lovely selbst ist ein German Riding Pony. Nicht sicher ob das auch ein Vollbliut ist."
+    },
+    {
+      id: "alpha",
+      type: "single",
+      title: "Welches Pferd unter den 14 Pferden ist die Leitstute?",
+      points: 2,
+      seconds: 45,
+      options: [
+        { key: "a", text: "Lovely" },
+        { key: "b", text: "Pascolo Go" },
+        { key: "c", text: "Radieschen" },
+        { key: "d", text: "Prisca" }
+      ],
+      correct: "c",
+      explanation:
+        "Radieschen ist unsere Leitstute " +
+        "- !."
+    },
+    {
+      id: "box",
+      type: "multi",
+      title: "Welche Pferde werden zum Füttern einzeln in Boxen geführt?",
+      hint: "Mehrere Antworten sind richtig.",
+      points: 3,
+      seconds: 60,
+      options: [
+        { key: "a", text: "Paquita" },
+        { key: "b", text: "Radieschen" },
+        { key: "c", text: "Bounty" },
+        { key: "d", text: "FedEx" },
+        { key: "e", text: "Cosmo"}
+      ],
+      correct: ["b", "c", "d"],
+      explanation:
+        "Radieschen, Bounty und FedEx werden zum Füttern einzeln in Boxen geführt – " +
+        "in dieser Reihenfolge."
+    },
+    {
+      id: "angry",
+      type: "text",
+      title: "Woran erkenne ich, dass mein Pferd schlecht gelaunt ist.",
+      hint: "Freitext. Bewertungs-Demo: Die Antwort muss ein bestimmtes Stichwort enthalten.",
+      required: false,
+      maxLength: 300,
+      placeholder: "z. B. Teilnahmelosigkeit und ungepflegtes Fell...",
+      keywords: ["angelegt"],
+      points: 2,
+      seconds: 120
+    },
+    {
+      id: "build-order",
+      type: "sort",
+      title: 
+        "Bringe die Arbeitsschritte beim täglichen Füttern in eine sinnvolle Reihenfolge." +
+        "(die Liste der Arbeitsschritte ist nicht vollständig)",
+      hint: "Ziehe die Einträge am Griff nach oben oder unten, oder nutze die Pfeile.",
+      points: 3,
+      seconds: 90,
+      options: [
+        { key: "s2", text: "Radieschen, Bounty und FedEx in Boxen führen" },
+        { key: "s5", text: "Prica Futtereimer umgehängen" },
+        { key: "s1", text: "Strom ausschalten" },
+        { key: "s4", text: "FedEx + Pamina Futtereimer umhängen" },
+        { key: "s3", text: "Pamina + FedEx von anderen Pferden wegführen" },
+        { key: "s7", text: "Pamina Fressbremse aufsetzen " },
+        { key: "s6", text: "Tessie und Lovely Futtereimer umhängen" }
+      ],
+      correct: ["s1", "s2", "s3", "s4", "s5", "s6", "s7"],
+      explanation: "Reihenfolge beim Füttern ist sehr wichtig."
+    },
+    {
+      id: "feedback-scale",
+      type: "scale",
+      title: "Wie sicher fühlst du dich mit deinen Aufgaben bei der Fütterung?",
+      hint: "1 = gar nicht, 5 = sehr sicher.",
+      points: 1,
+      seconds: 30,
+      min: 1,
+      max: 5,
+      labels: { 1: "gar nicht", 5: "sehr gut" },
+      correct: null
+    }
+  ]
+};
+
+/* ====================================================================
+   2) UI-TEXTE (zentral, für späteres i18n austauschbar)
+==================================================================== */
+const STR = {
+  questionOf: "Frage {i} von {n}",
+  requiredBadge: "Pflichtfrage",
+  optionalBadge: "optional",
+  back: "← Zurück",
+  next: "Weiter",
+  finish: "Abschließen",
+  msgRequired: "Bitte beantworte diese Frage, bevor du fortfährst.",
+  start: "Test starten",
+  resume: "Fortsetzen",
+  restart: "Von vorn beginnen",
+  restoredNote:
+    "Wir haben gespeicherte Antworten gefunden. Du kannst dort weitermachen, " +
+    "wo du aufgehört hast.",
+  resultTitle: "Test abgeschlossen",
+  answeredCount: "Beantwortete Fragen: {x} von {n}",
+  pointsLine: "Punkte: {x} von {y}",
+  passed: "Bestanden",
+  failed: "Nicht bestanden",
+  reviewTitle: "Auswertung",
+  yourAnswer: "Deine Antwort",
+  correctAnswer: "Richtige Antwort",
+  explanation: "Erläuterung",
+  noAnswer: "keine Antwort",
+  correct: "richtig",
+  wrong: "falsch",
+  notGraded: "nicht bewertet",
+  toTest: "Antworten ändern",
+  newTest: "Neuer Test",
+  metaQuestions: "{n} Fragen",
+  metaMinutes: "ca. {m} Min.",
+  saveNote:
+    "Alle Angaben bleiben lokal in deinem Browser (localStorage). " +
+    "Kein Server, keine Cookies, keine Übertragung."
+};
+
+/* ====================================================================
+   3) FRAGETYPEN-REGISTRY
+   --------------------------------------------------------------------
+   Jeder Typ implementiert:
+     label                        Anzeigename im Badge
+     render(box, q, v, setAnswer) baut die Eingabe-UI in das Element box
+                                 (v = aktueller Wert, setAnswer(neuerWert))
+     isEmpty(q, v)               true, solange keine gültige Antwort vorliegt
+     grade(q, v)                 true | false | null
+                                 null = nicht automatisch bewertbar
+     display(q, v)               Antwort als Text für die Auswertungsansicht
+     solution(q)                 optional: erwartete Antwort als Text
+
+   NEUEN FRAGETYP HINZUFÜGEN:
+     TYPES.datum = { label: "Datum", render: ..., isEmpty: ...,
+                     grade: ..., display: ... };
+   Danach genügt in TEST.questions: { type: "datum", ... }.
+==================================================================== */
+const TYPES = {};
+
+/* Helper: DOM-Elemente sicher (ohne innerHTML) erzeugen.
+   WICHTIG: SVG-Elemente (svg, path, circle, ...) müssen über
+   createElementNS im SVG-Namensraum erzeugt werden – mit dem normalen
+   createElement behandelt der Browser sie als unbekannte HTML-Elemente
+   und rendert die Grafik nicht (unsichtbare Icons). */
+const SVG_NS = "http://www.w3.org/2000/svg";
+const SVG_TAGS = ["svg", "path", "circle", "rect", "line", "polyline", "polygon", "ellipse", "g", "defs", "use", "text"];
+function el(tag, attrs, children) {
+  const node = SVG_TAGS.indexOf(tag) !== -1
+    ? document.createElementNS(SVG_NS, tag)
+    : document.createElement(tag);
+  if (attrs) {
+    Object.keys(attrs).forEach(function (k) {
+      const v = attrs[k];
+      if (v == null) return;
+      /* class grundsätzlich über setAttribute: gilt für HTML und SVG.
+         (SVGElement.className ist schreibgeschützt – eine Zuweisung würde
+         im Strict Mode sogar einen Fehler werfen.) */
+      if (k === "class") node.setAttribute("class", v);
+      else if (k === "text") node.textContent = v;
+      else if (k.slice(0, 2) === "on") node.addEventListener(k.slice(2), v);
+      else node.setAttribute(k, v);
+    });
+  }
+  (children || []).forEach(function (c) {
+    if (c == null) return;
+    node.appendChild(typeof c === "string" ? document.createTextNode(c) : c);
+  });
+  return node;
+}
+function checkSvg() {
+  return el("svg", { viewBox: "0 0 24 24", "aria-hidden": "true" }, [
+    el("path", { d: "M20 6L9 17l-5-5", fill: "none", stroke: "currentColor", "stroke-width": "3.5", "stroke-linecap": "round", "stroke-linejoin": "round" })
+  ]);
+}
+function arrowSvg(up) {
+  return el("svg", { viewBox: "0 0 24 24", class: up ? "" : "down", "aria-hidden": "true" }, [
+    el("path", { d: "M12 19V5M5 12l7-7 7 7", fill: "none", stroke: "currentColor", "stroke-width": "2.5", "stroke-linecap": "round", "stroke-linejoin": "round" })
+  ]);
+}
+
+/* ------------------------- Single Choice ------------------------- */
+TYPES.single = {
+  label: "Single Choice",
+  render: function (box, q, value, setAnswer) {
+    const twoCols = q.columns === 2 || q.options.length === 2;
+    const wrap = el("div", { class: "choices" + (twoCols ? " cols" : ""), role: "radiogroup", "aria-label": q.title });
+    q.options.forEach(function (opt) {
+      const on = value === opt.key;
+      const mark = el("span", { class: "choice-mark", "aria-hidden": "true" }, [
+        el("svg", { viewBox: "0 0 24 24" }, [el("circle", { cx: "12", cy: "12", r: "5", fill: "currentColor" })])
+      ]);
+      const btn = el("button", {
+        type: "button",
+        class: "choice" + (on ? " on" : ""),
+        "data-key": opt.key,
+        "aria-pressed": on ? "true" : "false"
+      }, [mark, el("span", { class: "choice-text", text: opt.text })]);
+      btn.addEventListener("click", function () {
+        setAnswer(opt.key);
+        wrap.querySelectorAll(".choice").forEach(function (b) {
+          const isOn = b.getAttribute("data-key") === opt.key;
+          b.className = "choice" + (isOn ? " on" : "");
+          b.setAttribute("aria-pressed", isOn ? "true" : "false");
+        });
+      });
+      wrap.appendChild(btn);
+    });
+    box.appendChild(wrap);
+  },
+  isEmpty: function (q, v) { return v == null || v === ""; },
+  grade: function (q, v) { return v === q.correct; },
+  display: function (q, v) {
+    const o = q.options.filter(function (x) { return x.key === v; })[0];
+    return o ? o.text : null;
+  }
+};
+
+/* ------------------------ Multiple Choice ------------------------ */
+TYPES.multi = {
+  label: "Multiple Choice",
+  render: function (box, q, value, setAnswer) {
+    const sel = Array.isArray(value) ? value.slice() : [];
+    const wrap = el("div", { class: "choices" + (q.options.length > 2 ? " cols" : "") });
+    q.options.forEach(function (opt) {
+      const on = sel.indexOf(opt.key) !== -1;
+      const mark = el("span", { class: "choice-mark", "aria-hidden": "true" }, [checkSvg()]);
+      const btn = el("button", {
+        type: "button",
+        class: "choice multi" + (on ? " on" : ""),
+        "data-key": opt.key,
+        "aria-pressed": on ? "true" : "false"
+      }, [mark, el("span", { class: "choice-text", text: opt.text })]);
+      btn.addEventListener("click", function () {
+        const i = sel.indexOf(opt.key);
+        if (i === -1) sel.push(opt.key); else sel.splice(i, 1);
+        const now = sel.indexOf(opt.key) !== -1;
+        btn.className = "choice multi" + (now ? " on" : "");
+        btn.setAttribute("aria-pressed", now ? "true" : "false");
+        setAnswer(sel.slice());
+      });
+      wrap.appendChild(btn);
+    });
+    box.appendChild(wrap);
+  },
+  isEmpty: function (q, v) { return !Array.isArray(v) || v.length === 0; },
+  grade: function (q, v) {
+    const a = (v || []).slice().sort().join("|");
+    const b = (q.correct || []).slice().sort().join("|");
+    return a === b;
+  },
+  display: function (q, v) {
+    const labels = {};
+    q.options.forEach(function (o) { labels[o.key] = o.text; });
+    return (v || []).map(function (k) { return labels[k] || k; }).join(", ") || null;
+  }
+};
+
+/* ----------------------------- Freitext -------------------------- */
+TYPES.text = {
+  label: "Freitext",
+  render: function (box, q, value, setAnswer) {
+    const ta = el("textarea", { class: "text-input", placeholder: q.placeholder || "", "aria-label": q.title });
+    ta.value = value || "";
+    if (q.maxLength) ta.setAttribute("maxlength", String(q.maxLength));
+    const count = el("div", { class: "char-count" });
+    function update() {
+      const len = ta.value.length;
+      count.textContent = q.maxLength ? len + " / " + q.maxLength : String(len);
+      count.className = "char-count" + (q.maxLength && len >= q.maxLength ? " limit" : "");
+    }
+    ta.addEventListener("input", function () { setAnswer(ta.value); update(); });
+    update();
+    box.appendChild(el("div", null, [ta, count]));
+  },
+  isEmpty: function (q, v) { return v == null || String(v).trim() === ""; },
+  grade: function (q, v) {
+    if (!q.keywords || !q.keywords.length) return null; /* nicht bewertbar */
+    const t = String(v || "").toLowerCase();
+    return q.keywords.every(function (k) {
+      return t.indexOf(String(k).toLowerCase()) !== -1;
+    });
+  },
+  display: function (q, v) { return v || null; },
+  solution: function (q) { return q.keywords ? q.keywords.join(", ") : null; }
+};
+
+/* ------------------------------ Skala ---------------------------- */
+TYPES.scale = {
+  label: "Skala",
+  render: function (box, q, value, setAnswer) {
+    const min = q.min || 1;
+    const max = q.max || 5;
+    const steps = [];
+    for (let n = min; n <= max; n++) steps.push(n);
+    const row = el("div", { class: "scale-row", role: "radiogroup", "aria-label": q.title });
+    row.style.gridTemplateColumns = "repeat(" + steps.length + ", 1fr)";
+    steps.forEach(function (n) {
+      const on = value === n;
+      const b = el("button", {
+        type: "button",
+        class: "scale-btn" + (on ? " on" : ""),
+        "data-n": String(n),
+        "aria-pressed": on ? "true" : "false",
+        text: String(n)
+      });
+      b.addEventListener("click", function () {
+        setAnswer(n);
+        row.querySelectorAll(".scale-btn").forEach(function (x) {
+          const isOn = x.getAttribute("data-n") === String(n);
+          x.className = "scale-btn" + (isOn ? " on" : "");
+          x.setAttribute("aria-pressed", isOn ? "true" : "false");
+        });
+      });
+      row.appendChild(b);
+    });
+    box.appendChild(row);
+    if (q.labels) {
+      box.appendChild(el("div", { class: "scale-labels" }, [
+        el("span", { text: q.labels[min] || "" }),
+        el("span", { text: q.labels[max] || "" })
+      ]));
+    }
+  },
+  isEmpty: function (q, v) { return v == null; },
+  grade: function (q, v) { return q.correct == null ? null : v === q.correct; },
+  display: function (q, v) {
+    if (v == null) return null;
+    return String(v) + (q.labels && q.labels[v] ? " (" + q.labels[v] + ")" : "");
+  }
+};
+
+/* --------------------------- Sortierung -------------------------- */
+TYPES.sort = {
+  label: "Sortierung",
+  render: function (box, q, value, setAnswer) {
+    const labels = {};
+    q.options.forEach(function (o) { labels[o.key] = o.text; });
+    let order = Array.isArray(value) ? value.slice() : q.options.map(function (o) { return o.key; });
+    const list = el("ol", { class: "sort-list" });
+
+    function commit() { setAnswer(order.slice()); }
+    function move(i, dir) {
+      const j = i + dir;
+      if (j < 0 || j >= order.length) return;
+      const t = order[i]; order[i] = order[j]; order[j] = t;
+      build(); commit();
+    }
+    function build() {
+      list.innerHTML = "";
+      order.forEach(function (key, i) {
+        const grip = el("span", { class: "sort-grip", title: "Zum Sortieren ziehen", "aria-hidden": "true" }, [
+          el("svg", { viewBox: "0 0 24 24" }, [
+            el("circle", { cx: "9", cy: "6", r: "1.7", fill: "currentColor" }),
+            el("circle", { cx: "15", cy: "6", r: "1.7", fill: "currentColor" }),
+            el("circle", { cx: "9", cy: "12", r: "1.7", fill: "currentColor" }),
+            el("circle", { cx: "15", cy: "12", r: "1.7", fill: "currentColor" }),
+            el("circle", { cx: "9", cy: "18", r: "1.7", fill: "currentColor" }),
+            el("circle", { cx: "15", cy: "18", r: "1.7", fill: "currentColor" })
+          ])
+        ]);
+        const num = el("span", { class: "sort-num", text: String(i + 1) });
+        const label = el("span", { class: "sort-label", text: labels[key] });
+        const up = el("button", {
+          type: "button", class: "sort-btn", "aria-label": "Eintrag nach oben",
+          onclick: function () { move(i, -1); }
+        }, [arrowSvg(true)]);
+        const down = el("button", {
+          type: "button", class: "sort-btn", "aria-label": "Eintrag nach unten",
+          onclick: function () { move(i, 1); }
+        }, [arrowSvg(false)]);
+        if (i === 0) up.disabled = true;
+        if (i === order.length - 1) down.disabled = true;
+        list.appendChild(el("li", { class: "sort-item", "data-key": key }, [grip, num, label, up, down]));
+      });
+    }
+    build();
+    makeSortable(list, function (newOrder) { order = newOrder; build(); commit(); });
+    box.appendChild(list);
+    box.appendChild(el("p", { class: "sort-tip", text: "Am breiten Griff ziehen (Maus oder Finger) oder Pfeile nutzen. Die Pfeile sind auch per Tastatur bedienbar." }));
+  },
+  isEmpty: function (q, v) { return !Array.isArray(v) || v.length === 0; },
+  grade: function (q, v) { return JSON.stringify(v) === JSON.stringify(q.correct); },
+  display: function (q, v) {
+    const labels = {};
+    q.options.forEach(function (o) { labels[o.key] = o.text; });
+    return (v || []).map(function (k, i) {
+      return (i + 1) + ". " + (labels[k] || k);
+    }).join("  →  ") || null;
+  }
+};
+
+/* Fallback für unbekannte Fragetypen (zeigt deutlichen Hinweis statt Absturz) */
+TYPES.fallback = {
+  label: "Unbekannt",
+  render: function (box, q) {
+    box.appendChild(el("p", { class: "hint", text: "Unbekannter Fragetyp \"" + q.type + "\" – bitte in TYPES registrieren." }));
+  },
+  isEmpty: function () { return true; },
+  grade: function () { return null; },
+  display: function () { return null; }
+};
+
+function registerType(name, impl) { TYPES[name] = impl; }
+
+/* ====================================================================
+   4) STATE, SPEICHERUNG, VIEWS
+==================================================================== */
+const STORE_KEY = "test-app:" + TEST.id;
+let state = { screen: "start", index: 0, answers: {}, finished: false, restored: false };
+
+function loadState() {
+  try {
+    const raw = window.localStorage.getItem(STORE_KEY);
+    if (!raw) return;
+    const saved = JSON.parse(raw);
+    if (saved && typeof saved === "object") {
+      state.answers = saved.answers || {};
+      const n = Math.max(1, TEST.questions.length);
+      state.index = Math.min(Math.max(0, saved.index || 0), n - 1);
+      state.finished = !!saved.finished;
+      state.restored = Object.keys(state.answers).length > 0;
+    }
+  } catch (e) {
+    /* localStorage nicht verfügbar (z. B. Privatmodus) – App läuft dann ohne Persistenz */
+  }
+}
+function saveState() {
+  try {
+    window.localStorage.setItem(STORE_KEY, JSON.stringify({
+      answers: state.answers, index: state.index, finished: state.finished
+    }));
+  } catch (e) { /* still schweigend ignorieren */ }
+}
+function clearState() {
+  try { window.localStorage.removeItem(STORE_KEY); } catch (e) { /* ignore */ }
+}
+
+function fmt(s, map) {
+  return String(s).replace(/\{(\w+)\}/g, function (m, k) {
+    return map && map[k] != null ? String(map[k]) : m;
+  });
+}
+function implOf(q) { return TYPES[q.type] || TYPES.fallback; }
+function isEmptyAnswer(q) {
+  return implOf(q).isEmpty(q, state.answers[q.id]);
+}
+function countAnswered() {
+  let c = 0;
+  TEST.questions.forEach(function (q) { if (!isEmptyAnswer(q)) c++; });
+  return c;
+}
+
+/* ------------------------------ App-Root ------------------------- */
+function renderApp() {
+  const app = document.getElementById("app");
+  app.innerHTML = "";
+  if (state.screen === "start") renderStart(app);
+  else if (state.screen === "finish") renderFinish(app);
+  else renderQuiz(app);
+}
+
+/* ---------------------------- Startscreen ------------------------ */
+function renderStart(app) {
+  const n = TEST.questions.length;
+  let secs = 0;
+  TEST.questions.forEach(function (q) { secs += q.seconds || 60; });
+  const typeNames = [];
+  TEST.questions.forEach(function (q) {
+    const t = implOf(q).label;
+    if (typeNames.indexOf(t) === -1) typeNames.push(t);
+  });
+  const resumeable = state.restored && !state.finished;
+
+  const card = el("div", { class: "card" }, [
+    el("div", { class: "hero-icon", "aria-hidden": "true" }, [
+      el("svg", { viewBox: "0 0 24 24" }, [
+        el("path", { d: "M9 11l3 3L22 4M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11", fill: "none", stroke: "currentColor", "stroke-width": "2", "stroke-linecap": "round", "stroke-linejoin": "round" })
+      ])
+    ]),
+    el("h1", { text: TEST.title }),
+    el("p", { class: "desc", text: TEST.description }),
+    el("div", { class: "chips" }, [
+      el("span", { class: "chip", text: fmt(STR.metaQuestions, { n: n }) }),
+      el("span", { class: "chip", text: fmt(STR.metaMinutes, { m: Math.max(1, Math.round(secs / 60)) }) }),
+      el("span", { class: "chip", text: "Typen: " + typeNames.join(", ") })
+    ]),
+    resumeable ? el("p", { class: "restored-note", text: STR.restoredNote }) : null
+  ]);
+
+  const btns = el("div", { class: "btn-col" });
+  const start = el("button", { class: "btn btn-primary", type: "button", text: resumeable ? STR.resume : STR.start });
+  start.addEventListener("click", function () {
+    if (resumeable) {
+      let target = TEST.questions.length - 1;
+      for (let i = 0; i < TEST.questions.length; i++) {
+        if (isEmptyAnswer(TEST.questions[i])) { target = i; break; }
+      }
+      state.index = target;
+    } else {
+      state.answers = {};
+      state.index = 0;
+      state.finished = false;
+      clearState();
+    }
+    state.screen = "quiz";
+    saveState();
+    renderApp();
+  });
+  btns.appendChild(start);
+  if (resumeable) {
+    const restart = el("button", { class: "btn btn-secondary", type: "button", text: STR.restart });
+    restart.addEventListener("click", function () {
+      state.answers = {}; state.index = 0; state.finished = false; state.restored = false;
+      clearState();
+      renderApp();
+    });
+    btns.appendChild(restart);
+  }
+  card.appendChild(btns);
+  app.appendChild(el("div", { class: "wrap" }, [card]));
+  app.appendChild(el("p", { class: "footer-note", text: STR.saveNote }));
+}
+
+/* --------------------------- Frage-Screen ------------------------ */
+function renderQuiz(app) {
+  const q = TEST.questions[state.index];
+  const impl = implOf(q);
+  const total = TEST.questions.length;
+  const required = q.required !== false;
+  const answered = !isEmptyAnswer(q);
+  const progress = ((state.index + (answered ? 1 : 0)) / total) * 100;
+
+  const fill = el("div", { class: "progress-fill" });
+  fill.style.width = Math.max(4, progress) + "%";
+
+  const header = el("header", { class: "app-header" }, [
+    el("div", { class: "wrap header-inner" }, [
+      el("div", { class: "progress-line" }, [
+        el("span", { class: "progress-text", text: fmt(STR.questionOf, { i: state.index + 1, n: total }) }),
+        el("span", { class: "badge type-badge", text: impl.label })
+      ]),
+      el("div", { class: "progress-track" }, [fill])
+    ])
+  ]);
+
+  const title = el("h1", { class: "q-title", tabindex: "-1", text: q.title });
+  const box = el("div", { class: "q-box" });
+  const msg = el("p", { class: "msg", "aria-live": "polite" });
+
+  impl.render(box, q, state.answers[q.id], function (v) {
+    state.answers[q.id] = v;
+    saveState();
+    updateNav();
+  });
+
+  function updateNav() {
+    const nowAnswered = !isEmptyAnswer(q);
+    nextBtn.disabled = required && !nowAnswered;
+    const p = ((state.index + (nowAnswered ? 1 : 0)) / total) * 100;
+    fill.style.width = Math.max(4, p) + "%";
+  }
+
+  const backBtn = el("button", { class: "btn btn-secondary", type: "button", text: STR.back });
+  backBtn.addEventListener("click", function () {
+    if (state.index > 0) { state.index--; }
+    else { state.screen = "start"; }
+    saveState();
+    renderApp();
+  });
+
+  const nextBtn = el("button", { class: "btn btn-primary", type: "button" });
+  nextBtn.textContent = state.index === total - 1 ? STR.finish : STR.next + " →";
+  nextBtn.addEventListener("click", function () {
+    if (required && isEmptyAnswer(q)) { msg.textContent = STR.msgRequired; return; }
+    if (state.index === total - 1) { finishTest(); return; }
+    state.index++;
+    saveState();
+    renderApp();
+  });
+
+  const card = el("div", { class: "card" }, [
+    title,
+    q.hint ? el("p", { class: "hint", text: q.hint }) : null,
+    el("p", { class: "req-line" }, [
+      el("span", { class: "badge badge-mut", text: required ? STR.requiredBadge : STR.optionalBadge })
+    ]),
+    box,
+    el("div", { class: "nav" }, [backBtn, nextBtn]),
+    msg
+  ]);
+
+  app.appendChild(header);
+  app.appendChild(el("div", { class: "wrap" }, [card]));
+  updateNav();
+  try { title.focus({ preventScroll: true }); } catch (e) { title.focus(); }
+}
+
+function finishTest() {
+  state.finished = true;
+  state.screen = "finish";
+  saveState();
+  renderApp();
+}
+
+/* -------------------------- Ergebnis-Screen ---------------------- */
+function computeResults() {
+  let maxPoints = 0, points = 0, correctCount = 0, gradableCount = 0, answeredCount = 0;
+  const rows = [];
+  TEST.questions.forEach(function (q, i) {
+    const impl = implOf(q);
+    const v = state.answers[q.id];
+    const empty = impl.isEmpty(q, v);
+    const pts = q.points || 1;
+    if (!empty) answeredCount++;
+    const g = empty ? null : impl.grade(q, v);
+    let correct = null;
+    if (g === true || g === false) {
+      gradableCount++;
+      maxPoints += pts;
+      correct = g;
+      if (g) { correctCount++; points += pts; }
+    }
+    rows.push({
+      q: q, index: i, empty: empty, correct: correct,
+      display: empty ? STR.noAnswer : (impl.display(q, v) || STR.noAnswer)
+    });
+  });
+  const percent = maxPoints > 0 ? Math.round((points / maxPoints) * 100) : null;
+  const passed = percent != null && TEST.passPercent != null ? percent >= TEST.passPercent : null;
+  return {
+    rows: rows, points: points, maxPoints: maxPoints, percent: percent,
+    answeredCount: answeredCount, correctCount: correctCount,
+    gradableCount: gradableCount, passed: passed
+  };
+}
+
+function solutionText(q) {
+  const impl = implOf(q);
+  if (impl.solution) return impl.solution(q);
+  return impl.display(q, q.correct) || null;
+}
+
+function renderFinish(app) {
+  const r = computeResults();
+  const n = TEST.questions.length;
+  const children = [];
+
+  children.push(el("h1", { text: STR.resultTitle }));
+  children.push(el("p", { class: "result-meta", text: fmt(STR.answeredCount, { x: r.answeredCount, n: n }) }));
+  if (r.percent != null) {
+    children.push(el("div", { class: "score-big", text: r.percent + "%" }));
+    children.push(el("p", { class: "result-meta", text: fmt(STR.pointsLine, { x: r.points, y: r.maxPoints }) }));
+    if (r.passed != null) {
+      children.push(el("p", null, [
+        el("span", { class: "badge " + (r.passed ? "badge-ok" : "badge-bad"), text: r.passed ? STR.passed : STR.failed })
+      ]));
+    }
+  }
+  children.push(el("h2", { class: "review-title", text: STR.reviewTitle }));
+  r.rows.forEach(function (row) {
+    const q = row.q;
+    const item = el("div", { class: "review-item" }, [
+      el("p", null, [
+        row.correct === true ? el("span", { class: "badge badge-ok", text: "✓ " + STR.correct })
+          : row.correct === false ? el("span", { class: "badge badge-bad", text: "✗ " + STR.wrong })
+          : el("span", { class: "badge badge-mut", text: STR.notGraded })
+      ]),
+      el("p", { class: "review-q", text: (row.index + 1) + ". " + q.title }),
+      el("p", { class: "review-line" }, [
+        el("span", { class: "lab", text: STR.yourAnswer + ": " }),
+        el("span", { text: row.display })
+      ])
+    ]);
+    if (TEST.showSolutions && row.correct === false) {
+      const sol = solutionText(q);
+      if (sol) {
+        item.appendChild(el("p", { class: "review-line sol" }, [
+          el("span", { class: "lab", text: STR.correctAnswer + ": " }),
+          el("span", { text: sol })
+        ]));
+      }
+    }
+    if (TEST.showSolutions && q.explanation) {
+      item.appendChild(el("p", { class: "review-expl", text: STR.explanation + ": " + q.explanation }));
+    }
+    children.push(item);
+  });
+
+  const btns = el("div", { class: "nav" });
+  const backBtn = el("button", { class: "btn btn-secondary", type: "button", text: STR.toTest });
+  backBtn.addEventListener("click", function () {
+    state.finished = false; state.screen = "quiz"; state.index = 0;
+    saveState(); renderApp();
+  });
+  const newBtn = el("button", { class: "btn btn-primary", type: "button", text: STR.newTest });
+  newBtn.addEventListener("click", function () {
+    state.answers = {}; state.index = 0; state.finished = false; state.restored = false;
+    state.screen = "start";
+    clearState(); renderApp();
+  });
+  btns.appendChild(backBtn);
+  btns.appendChild(newBtn);
+  children.push(btns);
+
+  app.appendChild(el("div", { class: "wrap" }, [
+    el("div", { class: "card result-head" }, children)
+  ]));
+}
+
+/* ====================================================================
+   5) DRAG & DROP FÜR SORTIERFRAGEN (Pointer Events: Maus + Touch)
+   --------------------------------------------------------------------
+   Fallback: ohne Pointer Events funktioniert die Sortierung weiterhin
+   über die Auf-/Ab-Buttons (auch per Tastatur).
+==================================================================== */
+function makeSortable(list, onChange) {
+  if (!window.PointerEvent) return; /* ältere Browser: Buttons bleiben nutzbar */
+
+  let drag = null;
+
+  function gapSize() {
+    try {
+      const cs = window.getComputedStyle(list);
+      const g = parseFloat(cs.rowGap || cs.gridRowGap) || parseFloat(cs.gap);
+      return isFinite(g) ? g : 0;
+    } catch (e) { return 0; }
+  }
+
+  list.addEventListener("pointerdown", function (e) {
+    const t = e.target;
+    const grip = t && t.closest ? t.closest(".sort-grip") : null;
+    if (!grip) return;
+    const item = grip.parentNode;
+    if (!item || !list.contains(item)) return;
+    e.preventDefault();
+    drag = { item: item, startY: e.clientY, shift: 0, pid: e.pointerId, moved: false };
+    item.classList.add("dragging");
+    try { item.setPointerCapture(e.pointerId); } catch (err) { /* ignore */ }
+  });
+
+  list.addEventListener("pointermove", function (e) {
+    if (!drag || e.pointerId !== drag.pid) return;
+    const item = drag.item;
+    const gap = gapSize();
+
+    /* visuelle Position aktualisieren */
+    item.style.transform = "translateY(" + (e.clientY - drag.startY - drag.shift) + "px)";
+
+    /* Nachbarn prüfen und bei Überschreitung live tauschen */
+    const next = item.nextElementSibling;
+    const prev = item.previousElementSibling;
+    const mid = item.offsetTop + (e.clientY - drag.startY - drag.shift) + item.offsetHeight / 2;
+    if (next) {
+      const nMid = next.offsetTop + next.offsetHeight / 2;
+      if (mid > nMid) {
+        list.insertBefore(next, item);
+        drag.shift += next.offsetHeight + gap;
+        drag.moved = true;
+      }
+    }
+    if (prev) {
+      const pMid = prev.offsetTop + prev.offsetHeight / 2;
+      if (mid < pMid) {
+        list.insertBefore(item, prev);
+        drag.shift -= prev.offsetHeight + gap;
+        drag.moved = true;
+      }
+    }
+    item.style.transform = "translateY(" + (e.clientY - drag.startY - drag.shift) + "px)";
+  });
+
+  function end(e) {
+    if (!drag || (e && e.pointerId !== drag.pid)) return;
+    const item = drag.item;
+    const moved = drag.moved;
+    drag = null;
+    item.classList.remove("dragging");
+    item.style.transform = "";
+    if (moved) {
+      const keys = [];
+      const items = list.querySelectorAll(".sort-item");
+      for (let i = 0; i < items.length; i++) keys.push(items[i].getAttribute("data-key"));
+      onChange(keys);
+    }
+  }
+  list.addEventListener("pointerup", end);
+  list.addEventListener("pointercancel", end);
+}
+
+/* ====================================================================
+   INIT
+==================================================================== */
+document.title = TEST.title;
+loadState();
+renderApp();
+</script>
+</body>
+</html>
