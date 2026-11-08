@@ -89,3 +89,5 @@ Die App ist komplett eigenständig und basiert nur auf nativem HTML, CSS und Jav
 
 - Alle UI-Texte liegen zentral in `STR` und können dadurch später einfach mehrsprachig gemacht werden.
 
+## app kann unter github-pages angesehen werden
+- https://manfredatgit.github.io/PferdeTest 
